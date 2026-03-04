@@ -17,6 +17,7 @@ function TasksPage() {
   const setCompleted = useMutation(api.tasks.setCompleted)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({})
   const pendingTasks = useMemo(
     () => tasks.filter((task) => !task.completed),
     [tasks],
@@ -91,25 +92,51 @@ function TasksPage() {
           <ul className="flex flex-col gap-3">
             {pendingTasks.map((task) => (
               <li key={task._id}>
-                <label className="flex items-start gap-3">
+                <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
                     checked={task.completed}
                     onChange={(event) => {
+                      const nextCompleted = event.target.checked
+                      if (!nextCompleted) {
+                        void setCompleted({
+                          id: task._id,
+                          completed: false,
+                        })
+                        return
+                      }
+
+                      const comments = (commentDrafts[task._id] ?? '').trim()
                       void setCompleted({
                         id: task._id,
-                        completed: event.target.checked,
+                        completed: true,
+                        comments,
+                      }).then(() => {
+                        setCommentDrafts((current) => ({ ...current, [task._id]: '' }))
                       })
                     }}
                     className="mt-1"
                   />
-                  <span className="flex flex-col">
+                  <span className="flex flex-col gap-2 flex-1">
                     <span>{task.title}</span>
                     {task.description ? (
                       <span className="text-sm text-gray-600">{task.description}</span>
                     ) : null}
+                    <textarea
+                      value={commentDrafts[task._id] ?? ''}
+                      onChange={(event) => {
+                        const nextValue = event.target.value
+                        setCommentDrafts((current) => ({
+                          ...current,
+                          [task._id]: nextValue,
+                        }))
+                      }}
+                      placeholder="Comments when checking off..."
+                      rows={2}
+                      className="border rounded-md px-2 py-1 text-sm resize-y"
+                    />
                   </span>
-                </label>
+                </div>
               </li>
             ))}
           </ul>
@@ -140,6 +167,9 @@ function TasksPage() {
                     <span className="line-through text-gray-600">{task.title}</span>
                     {task.description ? (
                       <span className="text-sm text-gray-500">{task.description}</span>
+                    ) : null}
+                    {task.comments ? (
+                      <span className="text-sm text-gray-500">Comments: {task.comments}</span>
                     ) : null}
                   </span>
                 </label>

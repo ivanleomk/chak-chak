@@ -8,6 +8,7 @@ const schema = defineSchema({
     userId: v.id("users"),
     title: v.string(),
     description: v.string(),
+    comments: v.optional(v.string()),
     completed: v.boolean(),
   }).index("by_user", ["userId"]),
 });

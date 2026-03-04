@@ -51,6 +51,7 @@ export const setCompleted = mutation({
   args: {
     id: v.id("tasks"),
     completed: v.boolean(),
+    comments: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -66,6 +67,13 @@ export const setCompleted = mutation({
       throw new Error("Forbidden");
     }
 
-    await ctx.db.patch("tasks", args.id, { completed: args.completed });
+    const patch: { completed: boolean; comments?: string } = {
+      completed: args.completed,
+    };
+    if (args.completed && args.comments !== undefined) {
+      patch.comments = args.comments.trim();
+    }
+
+    await ctx.db.patch("tasks", args.id, patch);
   },
 });
