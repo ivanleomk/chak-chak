@@ -71,11 +71,12 @@ function TasksPage() {
           placeholder="Task title..."
           className="border rounded-md px-3 py-2"
         />
-        <input
+        <textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Task description..."
-          className="border rounded-md px-3 py-2"
+          rows={3}
+          className="border rounded-md px-3 py-2 resize-y"
         />
         <button type="submit" className="border rounded-md px-4 py-2 self-start">
           Add
@@ -87,10 +88,10 @@ function TasksPage() {
         {pendingTasks.length === 0 ? (
           <p className="text-sm text-gray-600">No pending tasks.</p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-3">
             {pendingTasks.map((task) => (
               <li key={task._id}>
-                <label className="flex items-center gap-2">
+                <label className="flex items-start gap-3">
                   <input
                     type="checkbox"
                     checked={task.completed}
@@ -100,11 +101,14 @@ function TasksPage() {
                         completed: event.target.checked,
                       })
                     }}
+                    className="mt-1"
                   />
-                  <span>{task.title}</span>
-                  {task.description ? (
-                    <span className="text-sm text-gray-600">({task.description})</span>
-                  ) : null}
+                  <span className="flex flex-col">
+                    <span>{task.title}</span>
+                    {task.description ? (
+                      <span className="text-sm text-gray-600">{task.description}</span>
+                    ) : null}
+                  </span>
                 </label>
               </li>
             ))}
@@ -117,10 +121,10 @@ function TasksPage() {
         {completedTasks.length === 0 ? (
           <p className="text-sm text-gray-600">No completed tasks.</p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-3">
             {completedTasks.map((task) => (
               <li key={task._id}>
-                <label className="flex items-center gap-2">
+                <label className="flex items-start gap-3">
                   <input
                     type="checkbox"
                     checked={task.completed}
@@ -130,11 +134,14 @@ function TasksPage() {
                         completed: event.target.checked,
                       })
                     }}
+                    className="mt-1"
                   />
-                  <span className="line-through text-gray-600">{task.title}</span>
-                  {task.description ? (
-                    <span className="text-sm text-gray-500">({task.description})</span>
-                  ) : null}
+                  <span className="flex flex-col">
+                    <span className="line-through text-gray-600">{task.title}</span>
+                    {task.description ? (
+                      <span className="text-sm text-gray-500">{task.description}</span>
+                    ) : null}
+                  </span>
                 </label>
               </li>
             ))}
