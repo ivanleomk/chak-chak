@@ -1,6 +1,7 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { useConvexAuth, useMutation, useQuery } from 'convex/react'
+import { useAuthActions } from '@convex-dev/auth/react'
 import { api } from '../../convex/_generated/api'
 
 export const Route = createFileRoute('/tasks')({
@@ -8,12 +9,14 @@ export const Route = createFileRoute('/tasks')({
 })
 
 function TasksPage() {
-  const tasks = useQuery(api.tasks.list, {}) ?? []
+  const { isAuthenticated, isLoading } = useConvexAuth()
+  const { signOut } = useAuthActions()
+  const navigate = useNavigate()
+  const tasks = useQuery(api.tasks.list, isAuthenticated ? {} : 'skip') ?? []
   const createTask = useMutation(api.tasks.create)
   const setCompleted = useMutation(api.tasks.setCompleted)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-
   const pendingTasks = useMemo(
     () => tasks.filter((task) => !task.completed),
     [tasks],
@@ -23,9 +26,28 @@ function TasksPage() {
     [tasks],
   )
 
+  if (isLoading) {
+    return <main className="p-8">Loading...</main>
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/signin" />
+  }
+
   return (
     <main className="p-8 flex flex-col gap-8 max-w-2xl mx-auto">
-      <h1 className="text-4xl font-bold">Tasks</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-4xl font-bold">Tasks</h1>
+        <button
+          type="button"
+          onClick={() => {
+            void signOut().then(() => navigate({ to: '/' }))
+          }}
+          className="border rounded-md px-4 py-2"
+        >
+          Log out
+        </button>
+      </div>
       <form
         onSubmit={(event) => {
           event.preventDefault()
