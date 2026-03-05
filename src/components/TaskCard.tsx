@@ -62,7 +62,7 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
     void updateTask({
       id: _id,
       title: editTitle,
-      description: editDescription,
+      description: editDescription || "",
       comments,
     }).then(() => setIsEditing(false))
   }

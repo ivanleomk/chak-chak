@@ -1,4 +1,4 @@
-import { Link, Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useAction, useConvexAuth, useQuery } from 'convex/react'
 import { useAuthActions } from '@convex-dev/auth/react'
