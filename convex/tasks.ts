@@ -3,18 +3,29 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    status: v.union(v.literal("completed"), v.literal("pending")),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("Unauthorized");
     }
 
-    return await ctx.db
+    const completed = args.status === "completed";
+    let query = ctx.db
       .query("tasks")
       .withIndex("by_user", (q) => q.eq("userId", userId))
-      .order("desc")
-      .collect();
+      .order("desc");
+
+    if (args.limit !== undefined) {
+      return (await query.collect())
+        .filter((t) => t.completed === completed)
+        .slice(0, args.limit);
+    }
+
+    return (await query.collect()).filter((t) => t.completed === completed);
   },
 });
 
@@ -43,6 +54,35 @@ export const create = mutation({
       title,
       description,
       completed: false,
+    });
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("tasks"),
+    title: v.string(),
+    description: v.string(),
+    comments: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const task = await ctx.db.get("tasks", args.id);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    if (task.userId !== userId) {
+      throw new Error("Forbidden");
+    }
+
+    await ctx.db.patch("tasks", args.id, {
+      title: args.title.trim(),
+      description: args.description.trim(),
+      comments: args.comments?.trim(),
     });
   },
 });
