@@ -28,84 +28,86 @@ function TasksPage() {
   }
 
   return (
-    <main className="p-8 flex flex-col gap-8 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-4xl font-bold">Tasks</h1>
-        <button
-          type="button"
-          onClick={() => {
-            void signOut().then(() => navigate({ to: '/' }))
+    <main className="min-h-screen bg-gray-100/60 p-8">
+      <div className="max-w-2xl mx-auto flex flex-col gap-8">
+        <div className="flex items-center justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              void signOut().then(() => navigate({ to: '/' }))
+            }}
+            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            Log out
+          </button>
+        </div>
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            const trimmed = input.trim()
+            if (!trimmed || isCreating) return
+
+            setIsCreating(true)
+            void createTask({ input: trimmed })
+              .then(() => setInput(''))
+              .finally(() => setIsCreating(false))
           }}
-          className="border rounded-md px-4 py-2"
+          className="relative"
         >
-          Log out
-        </button>
-      </div>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          const trimmed = input.trim()
-          if (!trimmed || isCreating) return
+          <div className="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 px-5 py-4">
+            {isCreating ? (
+              <svg className="animate-spin h-5 w-5 text-gray-300 mr-4 shrink-0" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <span className="text-gray-300 mr-4 text-xl font-light shrink-0">+</span>
+            )}
+            <input
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Quickly add a task..."
+              className="flex-1 bg-transparent outline-none text-gray-600 placeholder:text-gray-300"
+              disabled={isCreating}
+            />
+          </div>
+        </form>
 
-          setIsCreating(true)
-          void createTask({ input: trimmed })
-            .then(() => setInput(''))
-            .finally(() => setIsCreating(false))
-        }}
-        className="flex gap-2"
-      >
-        <input
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Describe your task..."
-          className="border rounded-md px-3 py-2 flex-1"
-          disabled={isCreating}
-        />
-        <button type="submit" className="border rounded-md px-4 py-2 disabled:opacity-50" disabled={isCreating}>
-          {isCreating ? (
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
+        <section className="flex flex-col gap-3">
+          <h2 className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-300">Pending</h2>
+          {pendingTasks.length === 0 ? (
+            <div className="border-2 border-dashed border-gray-200 rounded-2xl py-12 flex items-center justify-center">
+              <p className="text-gray-300">No pending tasks. Enjoy your day!</p>
+            </div>
           ) : (
-            'Add'
+            <ul className="flex flex-col gap-2">
+              {pendingTasks.map((task) => (
+                <li key={task._id}>
+                  <TaskCard {...task} />
+                </li>
+              ))}
+            </ul>
           )}
-        </button>
-      </form>
+        </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">Pending</h2>
-        {pendingTasks.length === 0 ? (
-          <p className="text-sm text-gray-600">No pending tasks.</p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {pendingTasks.map((task) => (
-              <li key={task._id}>
-                <TaskCard {...task} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">Completed</h2>
-        {completedTasks.length === 0 ? (
-          <p className="text-sm text-gray-600">No completed tasks.</p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {completedTasks.map((task) => (
-              <li key={task._id}>
-                <TaskCard {...task} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <Link to="/" className="text-blue-600 underline hover:no-underline">
-        Back
-      </Link>
+        <section className="flex flex-col gap-3">
+          <h2 className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-300">Completed</h2>
+          {completedTasks.length === 0 ? (
+            <div className="border-2 border-dashed border-gray-200 rounded-2xl py-12 flex items-center justify-center">
+              <p className="text-gray-300">No completed tasks yet.</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {completedTasks.map((task) => (
+                <li key={task._id}>
+                  <TaskCard {...task} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </main>
   )
 }

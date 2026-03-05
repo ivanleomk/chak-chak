@@ -46,7 +46,7 @@ export const create = action({
     for (const task of tasks) {
       await ctx.runMutation(api.tasks.insert, {
         title: task.title,
-        description: task.description,
+        description: task.description ?? "",
       });
     }
   },
@@ -98,6 +98,28 @@ export const update = mutation({
       description: args.description.trim(),
       comments: args.comments?.trim(),
     });
+  },
+});
+
+export const remove = mutation({
+  args: {
+    id: v.id("tasks"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const task = await ctx.db.get(args.id);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+    if (task.userId !== userId) {
+      throw new Error("Forbidden");
+    }
+
+    await ctx.db.delete(args.id);
   },
 });
 

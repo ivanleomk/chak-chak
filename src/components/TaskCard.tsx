@@ -1,145 +1,274 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
-import { useTaskEditor } from '../hooks/useTaskEditor'
 
 interface TaskCardProps {
   _id: Id<'tasks'>
   title: string
-  description: string
+  description?: string
   comments?: string
   completed: boolean
 }
 
 export function TaskCard({ _id, title, description, comments, completed }: TaskCardProps) {
   const setCompleted = useMutation(api.tasks.setCompleted)
-  const {
-    editingId,
-    editTitle, setEditTitle,
-    editDescription, setEditDescription,
-    editComments, setEditComments,
-    startEditing, cancelEditing, saveEdit,
-  } = useTaskEditor()
+  const updateTask = useMutation(api.tasks.update)
+  const removeTask = useMutation(api.tasks.remove)
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [editTitle, setEditTitle] = useState(title)
+  const [editDescription, setEditDescription] = useState(description)
   const [commentDraft, setCommentDraft] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
 
-  const isEditing = editingId === _id
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
 
+  useEffect(() => {
+    if (!isExpanded) return
+    const handler = (e: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setIsExpanded(false)
+        setCommentDraft('')
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [isExpanded])
+
+  const startEditing = () => {
+    setEditTitle(title)
+    setEditDescription(description)
+    setIsEditing(true)
+    setMenuOpen(false)
+  }
+
+  const cancelEditing = () => setIsEditing(false)
+
+  const saveEdit = () => {
+    if (!editTitle.trim()) return
+    void updateTask({
+      id: _id,
+      title: editTitle,
+      description: editDescription,
+      comments,
+    }).then(() => setIsEditing(false))
+  }
+
+  const handleDelete = () => {
+    setMenuOpen(false)
+    void removeTask({ id: _id })
+  }
+
+  // Editing state - inline expanded card
   if (isEditing) {
     return (
-      <div className="flex flex-col gap-2 border rounded-md p-3">
-        <input
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          className="border rounded-md px-3 py-2"
-          placeholder="Title"
-        />
-        <textarea
-          value={editDescription}
-          onChange={(e) => setEditDescription(e.target.value)}
-          className="border rounded-md px-3 py-2 resize-y"
-          placeholder="Description"
-          rows={2}
-        />
-        <textarea
-          value={editComments}
-          onChange={(e) => setEditComments(e.target.value)}
-          className="border rounded-md px-3 py-2 resize-y"
-          placeholder="Comments"
-          rows={2}
-        />
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={saveEdit}
-            className="border rounded-md px-4 py-1 text-sm"
-          >
-            Save
-          </button>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-5">
+        <div className="flex items-start gap-4">
+          {/* Checkbox icon */}
+          <div className="shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 border-violet-300 bg-violet-50 flex items-center justify-center">
+            {completed && (
+              <svg className="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+          <div className="flex flex-col flex-1 min-w-0 gap-1">
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="text-lg text-gray-700 bg-transparent outline-none placeholder:text-gray-300 pb-2 border-b border-gray-200"
+              placeholder="Task title..."
+              autoFocus
+            />
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              className="text-sm text-gray-500 bg-transparent outline-none placeholder:text-gray-300 resize-none mt-1"
+              placeholder="Add a description..."
+              rows={3}
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 mt-4">
           <button
             type="button"
             onClick={cancelEditing}
-            className="border rounded-md px-4 py-1 text-sm"
+            className="text-gray-400 text-sm hover:text-gray-600 transition-colors"
           >
             Cancel
+          </button>
+          <button
+            type="button"
+            onClick={saveEdit}
+            className="bg-violet-400 text-white rounded-full px-5 py-1.5 text-sm font-medium hover:bg-violet-500 transition-colors"
+          >
+            Save
           </button>
         </div>
       </div>
     )
   }
 
+  // Completed task - default & hover states
   if (completed) {
     return (
-      <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          checked
-          onChange={(event) => {
-            void setCompleted({
-              id: _id,
-              completed: event.target.checked,
-            })
-          }}
-          className="mt-1"
-        />
-        <span className="flex flex-col">
-          <span className="line-through text-gray-600">{title}</span>
-          {description ? (
-            <span className="text-sm text-gray-500">{description}</span>
-          ) : null}
-          {comments ? (
-            <span className="text-sm text-gray-500">Comments: {comments}</span>
-          ) : null}
-        </span>
+      <div className="flex items-center gap-4 bg-white/80 rounded-2xl shadow-sm border border-gray-200/40 px-5 py-4 group">
         <button
           type="button"
-          onClick={() => startEditing({ _id, title, description, comments })}
-          className="text-sm text-blue-600 underline hover:no-underline shrink-0 ml-auto"
+          onClick={() => void setCompleted({ id: _id, completed: false })}
+          className="shrink-0 w-7 h-7 rounded-full border-2 border-violet-300 bg-violet-50 flex items-center justify-center hover:bg-violet-100 transition-colors"
         >
-          Edit
+          <svg className="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
         </button>
+        <div className="flex flex-col flex-1 min-w-0">
+          <span className="text-gray-400 line-through">{title}</span>
+          {description ? (
+            <span className="text-sm text-gray-300">{description}</span>
+          ) : null}
+        </div>
+        {/* Hover actions */}
+        <div className="relative opacity-0 group-hover:opacity-100 transition-opacity shrink-0" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-gray-300 hover:text-gray-500 transition-colors p-1"
+            title="More"
+          >
+            <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="1.5" />
+              <circle cx="12" cy="12" r="1.5" />
+              <circle cx="12" cy="19" r="1.5" />
+            </svg>
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-10 min-w-[120px]">
+              <button
+                type="button"
+                onClick={startEditing}
+                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     )
   }
 
-  return (
-    <div className="flex items-start gap-3">
-      <input
-        type="checkbox"
-        checked={false}
-        onChange={(event) => {
-          const nextCompleted = event.target.checked
-          if (!nextCompleted) return
-
-          const trimmedComment = commentDraft.trim()
-          void setCompleted({
-            id: _id,
-            completed: true,
-            comments: trimmedComment,
-          }).then(() => setCommentDraft(''))
-        }}
-        className="mt-1"
-      />
-      <span className="flex flex-col gap-2 flex-1">
-        <span>{title}</span>
-        {description ? (
-          <span className="text-sm text-gray-600">{description}</span>
-        ) : null}
-        <textarea
-          value={commentDraft}
-          onChange={(event) => setCommentDraft(event.target.value)}
-          placeholder="Comments when checking off..."
-          rows={2}
-          className="border rounded-md px-2 py-1 text-sm resize-y"
-        />
-      </span>
-      <button
-        type="button"
-        onClick={() => startEditing({ _id, title, description, comments })}
-        className="text-sm text-blue-600 underline hover:no-underline shrink-0"
+  // Pending task – minimized by default, expands on click
+  if (!isExpanded) {
+    return (
+      <div
+        className="flex items-center gap-4 px-5 py-3 cursor-pointer group rounded-2xl hover:bg-white/60 transition-colors"
+        onClick={() => setIsExpanded(true)}
       >
-        Edit
-      </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            void setCompleted({ id: _id, completed: true })
+          }}
+          className="shrink-0 w-7 h-7 rounded-full border-2 border-gray-300 hover:border-violet-400 transition-colors"
+        />
+        <div className="flex flex-col flex-1 min-w-0">
+          <span className="text-gray-700">{title}</span>
+          {description ? (
+            <span className="text-sm text-gray-400 truncate">{description}</span>
+          ) : null}
+        </div>
+        {/* Hover actions */}
+        <div className="relative opacity-0 group-hover:opacity-100 transition-opacity shrink-0" ref={menuRef}>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}
+            className="text-gray-300 hover:text-gray-500 transition-colors p-1"
+            title="More"
+          >
+            <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="1.5" />
+              <circle cx="12" cy="12" r="1.5" />
+              <circle cx="12" cy="19" r="1.5" />
+            </svg>
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-10 min-w-[120px]">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); startEditing() }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); handleDelete() }}
+                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Pending task – expanded
+  return (
+    <div ref={cardRef} className="bg-white rounded-2xl shadow-sm border border-gray-200/60 px-5 py-4">
+      <div className="flex items-start gap-4">
+        <button
+          type="button"
+          onClick={() => {
+            const trimmedComment = commentDraft.trim()
+            void setCompleted({
+              id: _id,
+              completed: true,
+              comments: trimmedComment || undefined,
+            }).then(() => {
+              setCommentDraft('')
+              setIsExpanded(false)
+            })
+          }}
+          className="shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 border-gray-300 hover:border-violet-400 transition-colors"
+        />
+        <div className="flex flex-col flex-1 min-w-0 gap-1">
+          <span className="text-gray-700 font-medium">{title}</span>
+          {description ? (
+            <span className="text-sm text-gray-400">{description}</span>
+          ) : null}
+          <textarea
+            value={commentDraft}
+            onChange={(e) => setCommentDraft(e.target.value)}
+            placeholder="Add a comment..."
+            rows={1}
+            className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm resize-none outline-none focus:border-violet-300 transition-colors text-gray-500 placeholder:text-gray-300 mt-1 field-sizing-content"
+          />
+        </div>
+      </div>
     </div>
   )
 }
