@@ -7,7 +7,7 @@ const schema = defineSchema({
   tasks: defineTable({
     userId: v.id("users"),
     title: v.string(),
-    description: v.string(),
+    description: v.optional(v.string()),
     comments: v.optional(v.string()),
     completed: v.boolean(),
   }).index("by_user", ["userId"]),

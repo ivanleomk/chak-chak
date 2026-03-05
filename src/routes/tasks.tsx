@@ -1,6 +1,6 @@
 import { Link, Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useConvexAuth, useMutation, useQuery } from 'convex/react'
+import { useAction, useConvexAuth, useQuery } from 'convex/react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { api } from '../../convex/_generated/api'
 import { TaskCard } from '../components/TaskCard'
@@ -15,9 +15,9 @@ function TasksPage() {
   const navigate = useNavigate()
   const pendingTasks = useQuery(api.tasks.list, isAuthenticated ? { status: 'pending' as const } : 'skip') ?? []
   const completedTasks = useQuery(api.tasks.list, isAuthenticated ? { status: 'completed' as const } : 'skip') ?? []
-  const createTask = useMutation(api.tasks.create)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const createTask = useAction(api.tasks.create)
+  const [input, setInput] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
 
   if (isLoading) {
     return <main className="p-8">Loading...</main>
@@ -44,35 +44,32 @@ function TasksPage() {
       <form
         onSubmit={(event) => {
           event.preventDefault()
-          const trimmedTitle = title.trim()
-          const trimmedDescription = description.trim()
-          if (!trimmedTitle || !trimmedDescription) return
+          const trimmed = input.trim()
+          if (!trimmed || isCreating) return
 
-          void createTask({
-            title: trimmedTitle,
-            description: trimmedDescription,
-          }).then(() => {
-            setTitle('')
-            setDescription('')
-          })
+          setIsCreating(true)
+          void createTask({ input: trimmed })
+            .then(() => setInput(''))
+            .finally(() => setIsCreating(false))
         }}
-        className="flex flex-col gap-2"
+        className="flex gap-2"
       >
         <input
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="Task title..."
-          className="border rounded-md px-3 py-2"
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder="Describe your task..."
+          className="border rounded-md px-3 py-2 flex-1"
+          disabled={isCreating}
         />
-        <textarea
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="Task description..."
-          rows={3}
-          className="border rounded-md px-3 py-2 resize-y"
-        />
-        <button type="submit" className="border rounded-md px-4 py-2 self-start">
-          Add
+        <button type="submit" className="border rounded-md px-4 py-2 disabled:opacity-50" disabled={isCreating}>
+          {isCreating ? (
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            'Add'
+          )}
         </button>
       </form>
 

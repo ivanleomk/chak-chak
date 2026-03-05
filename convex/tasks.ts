@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { mutation, query } from "./_generated/server";
+import { action, mutation, query } from "./_generated/server";
+import { api } from "./_generated/api";
+import { generateTasks } from "./llm";
 
 export const list = query({
   args: {
@@ -29,7 +31,28 @@ export const list = query({
   },
 });
 
-export const create = mutation({
+export const create = action({
+  args: {
+    input: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const input = args.input.trim();
+    if (!input) {
+      throw new Error("Input is required");
+    }
+
+    const tasks = await generateTasks(input);
+
+    for (const task of tasks) {
+      await ctx.runMutation(api.tasks.insert, {
+        title: task.title,
+        description: task.description,
+      });
+    }
+  },
+});
+
+export const insert = mutation({
   args: {
     title: v.string(),
     description: v.string(),
@@ -40,19 +63,10 @@ export const create = mutation({
       throw new Error("Unauthorized");
     }
 
-    const title = args.title.trim();
-    const description = args.description.trim();
-    if (!title) {
-      throw new Error("Title is required");
-    }
-    if (!description) {
-      throw new Error("Description is required");
-    }
-
-    return await ctx.db.insert("tasks", {
+    await ctx.db.insert("tasks", {
       userId,
-      title,
-      description,
+      title: args.title,
+      description: args.description,
       completed: false,
     });
   },
