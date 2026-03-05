@@ -28,7 +28,8 @@ function TasksPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100/60 p-8">
+    <main className="min-h-screen bg-gray-100/60 dark:bg-gray-950 p-8">
+
       <div className="max-w-2xl mx-auto flex flex-col gap-8">
         <div className="flex items-center justify-end">
           <button
@@ -36,7 +37,7 @@ function TasksPage() {
             onClick={() => {
               void signOut().then(() => navigate({ to: '/' }))
             }}
-            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             Log out
           </button>
@@ -55,30 +56,30 @@ function TasksPage() {
           }}
           className="relative"
         >
-          <div className="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 px-5 py-4">
+          <div className="flex items-center bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 px-5 py-4">
             {isCreating ? (
-              <svg className="animate-spin h-5 w-5 text-gray-300 mr-4 shrink-0" viewBox="0 0 24 24" fill="none">
+              <svg className="animate-spin h-5 w-5 text-gray-300 dark:text-gray-600 mr-4 shrink-0" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             ) : (
-              <span className="text-gray-300 mr-4 text-xl font-light shrink-0">+</span>
+              <span className="text-gray-300 dark:text-gray-600 mr-4 text-xl font-light shrink-0">+</span>
             )}
             <input
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="Quickly add a task..."
-              className="flex-1 bg-transparent outline-none text-gray-600 placeholder:text-gray-300"
+              className="flex-1 bg-transparent outline-none text-gray-600 dark:text-gray-300 placeholder:text-gray-300 dark:placeholder:text-gray-600"
               disabled={isCreating}
             />
           </div>
         </form>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-300">Pending</h2>
+          <h2 className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-300 dark:text-violet-400">Pending</h2>
           {pendingTasks.length === 0 ? (
-            <div className="border-2 border-dashed border-gray-200 rounded-2xl py-12 flex items-center justify-center">
-              <p className="text-gray-300">No pending tasks. Enjoy your day!</p>
+            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl py-12 flex items-center justify-center">
+              <p className="text-gray-300 dark:text-gray-600">No pending tasks. Enjoy your day!</p>
             </div>
           ) : (
             <ul className="flex flex-col gap-2">
@@ -92,10 +93,10 @@ function TasksPage() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-300">Completed</h2>
+          <h2 className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-300 dark:text-violet-400">Completed</h2>
           {completedTasks.length === 0 ? (
-            <div className="border-2 border-dashed border-gray-200 rounded-2xl py-12 flex items-center justify-center">
-              <p className="text-gray-300">No completed tasks yet.</p>
+            <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl py-12 flex items-center justify-center">
+              <p className="text-gray-300 dark:text-gray-600">No completed tasks yet.</p>
             </div>
           ) : (
             <ul className="flex flex-col gap-2">

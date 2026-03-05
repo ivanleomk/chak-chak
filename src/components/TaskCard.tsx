@@ -75,10 +75,9 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
   // Editing state - inline expanded card
   if (isEditing) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 p-5">
         <div className="flex items-start gap-4">
-          {/* Checkbox icon */}
-          <div className="shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 border-violet-300 bg-violet-50 flex items-center justify-center">
+          <div className="shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 border-violet-300 bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
             {completed && (
               <svg className="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -89,14 +88,14 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
             <input
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
-              className="text-lg text-gray-700 bg-transparent outline-none placeholder:text-gray-300 pb-2 border-b border-gray-200"
+              className="text-lg text-gray-700 dark:text-gray-200 bg-transparent outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600 pb-2 border-b border-gray-200 dark:border-gray-700"
               placeholder="Task title..."
               autoFocus
             />
             <textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
-              className="text-sm text-gray-500 bg-transparent outline-none placeholder:text-gray-300 resize-none mt-1"
+              className="text-sm text-gray-500 dark:text-gray-400 bg-transparent outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600 resize-none mt-1"
               placeholder="Add a description..."
               rows={3}
             />
@@ -106,7 +105,7 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
           <button
             type="button"
             onClick={cancelEditing}
-            className="text-gray-400 text-sm hover:text-gray-600 transition-colors"
+            className="text-gray-400 text-sm hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             Cancel
           </button>
@@ -125,20 +124,20 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
   // Completed task - default & hover states
   if (completed) {
     return (
-      <div className="flex items-center gap-4 bg-white/80 rounded-2xl shadow-sm border border-gray-200/40 px-5 py-4 group">
+      <div className="flex items-center gap-4 bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-700/40 px-5 py-4 group">
         <button
           type="button"
           onClick={() => void setCompleted({ id: _id, completed: false })}
-          className="shrink-0 w-7 h-7 rounded-full border-2 border-violet-300 bg-violet-50 flex items-center justify-center hover:bg-violet-100 transition-colors"
+          className="shrink-0 w-7 h-7 rounded-full border-2 border-violet-300 bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors"
         >
           <svg className="w-3.5 h-3.5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </button>
         <div className="flex flex-col flex-1 min-w-0">
-          <span className="text-gray-400 line-through">{title}</span>
+          <span className="text-gray-400 dark:text-gray-500 line-through">{title}</span>
           {description ? (
-            <span className="text-sm text-gray-300">{description}</span>
+            <span className="text-sm text-gray-300 dark:text-gray-600">{description}</span>
           ) : null}
         </div>
         {/* Hover actions */}
@@ -146,7 +145,7 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-gray-300 hover:text-gray-500 transition-colors p-1"
+            className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors p-1"
             title="More"
           >
             <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
@@ -156,18 +155,18 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
             </svg>
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-10 min-w-[120px]">
+            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 min-w-[120px]">
               <button
                 type="button"
                 onClick={startEditing}
-                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Edit
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Delete
               </button>
@@ -182,7 +181,7 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
   if (!isExpanded) {
     return (
       <div
-        className="flex items-center gap-4 px-5 py-3 cursor-pointer group rounded-2xl hover:bg-white/60 transition-colors"
+        className="flex items-center gap-4 px-5 py-3 cursor-pointer group rounded-2xl hover:bg-white/60 dark:hover:bg-gray-800/60 transition-colors"
         onClick={() => setIsExpanded(true)}
       >
         <button
@@ -191,12 +190,12 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
             e.stopPropagation()
             void setCompleted({ id: _id, completed: true })
           }}
-          className="shrink-0 w-7 h-7 rounded-full border-2 border-gray-300 hover:border-violet-400 transition-colors"
+          className="shrink-0 w-7 h-7 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-violet-400 transition-colors"
         />
         <div className="flex flex-col flex-1 min-w-0">
-          <span className="text-gray-700">{title}</span>
+          <span className="text-gray-700 dark:text-gray-200">{title}</span>
           {description ? (
-            <span className="text-sm text-gray-400 truncate">{description}</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500 truncate">{description}</span>
           ) : null}
         </div>
         {/* Hover actions */}
@@ -204,7 +203,7 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}
-            className="text-gray-300 hover:text-gray-500 transition-colors p-1"
+            className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition-colors p-1"
             title="More"
           >
             <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
@@ -214,18 +213,18 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
             </svg>
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-10 min-w-[120px]">
+            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 min-w-[120px]">
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); startEditing() }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Edit
               </button>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); handleDelete() }}
-                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Delete
               </button>
@@ -238,7 +237,7 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
 
   // Pending task – expanded
   return (
-    <div ref={cardRef} className="bg-white rounded-2xl shadow-sm border border-gray-200/60 px-5 py-4">
+    <div ref={cardRef} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 px-5 py-4">
       <div className="flex items-start gap-4">
         <button
           type="button"
@@ -253,19 +252,19 @@ export function TaskCard({ _id, title, description, comments, completed }: TaskC
               setIsExpanded(false)
             })
           }}
-          className="shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 border-gray-300 hover:border-violet-400 transition-colors"
+          className="shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-violet-400 transition-colors"
         />
         <div className="flex flex-col flex-1 min-w-0 gap-1">
-          <span className="text-gray-700 font-medium">{title}</span>
+          <span className="text-gray-700 dark:text-gray-200 font-medium">{title}</span>
           {description ? (
-            <span className="text-sm text-gray-400">{description}</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500">{description}</span>
           ) : null}
           <textarea
             value={commentDraft}
             onChange={(e) => setCommentDraft(e.target.value)}
             placeholder="Add a comment..."
             rows={1}
-            className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm resize-none outline-none focus:border-violet-300 transition-colors text-gray-500 placeholder:text-gray-300 mt-1 field-sizing-content"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-sm resize-none outline-none focus:border-violet-300 dark:focus:border-violet-500 transition-colors text-gray-500 dark:text-gray-400 placeholder:text-gray-300 dark:placeholder:text-gray-600 mt-1 field-sizing-content bg-transparent"
           />
         </div>
       </div>
