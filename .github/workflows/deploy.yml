@@ -12,14 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
-      - run: pnpm install --frozen-lockfile
+      - run: npm ci
 
       # Staging: deploy Convex (dev) + Cloudflare Workers (staging)
       - name: Deploy Convex (dev)
@@ -30,7 +28,7 @@ jobs:
 
       - name: Build (staging)
         if: github.ref == 'refs/heads/dev'
-        run: pnpm build
+        run: npm run build
 
       - name: Deploy to Staging
         if: github.ref == 'refs/heads/dev'
@@ -47,7 +45,7 @@ jobs:
 
       - name: Build (production)
         if: github.ref == 'refs/heads/main'
-        run: pnpm build
+        run: npm run build
 
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
