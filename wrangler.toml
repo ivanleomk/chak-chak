@@ -6,8 +6,23 @@ keep_vars = true
 
 [observability]
 enabled = true
-head_sampling_rate=1
+head_sampling_rate = 1
 
 [observability.logs]
+enabled = false
+invocation_logs = true
+
+# Staging environment — deployed from `dev` branch
+# Access at: chak-chak-staging.<your-subdomain>.workers.dev
+# Or assign a custom domain like staging.usechakchak.com in the dashboard
+[env.staging]
+name = "chak-chak-staging"
+keep_vars = true
+
+[env.staging.observability]
+enabled = true
+head_sampling_rate = 1
+
+[env.staging.observability.logs]
 enabled = false
 invocation_logs = true
